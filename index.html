@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kreditapple</title>
+<style>
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:#f3f3f3}
+.card{max-width:480px;margin:0 auto;background:#fff;min-height:100vh;padding-bottom:20px}
+.header{background:#ff6a00;color:#fff;padding:14px 16px;text-align:center;font-size:24px;font-weight:900;display:flex;justify-content:space-between;align-items:center}
+.header .back{font-size:26px;cursor:pointer;font-weight:400}
+.header .menu{font-size:26px}
+.body{padding:16px}
+.pending{background:#ff6a00;color:#fff;border-radius:14px;padding:18px 16px;display:flex;justify-content:space-between;align-items:center}
+.pending b{font-size:19px}
+.pending .d{font-size:34px;font-weight:900}
+.pending .d small{font-size:15px;font-weight:400}
+.amounts{display:flex;margin:22px 0 8px;text-align:center}
+.amounts div{flex:1}
+.amounts div+div{border-left:1px solid #eee}
+.amounts p{color:#666;font-size:13px;margin:0}
+.amounts h2{margin:8px 0;font-size:30px}
+h3{font-size:20px;margin:20px 0 14px}
+.ch{display:flex;flex-wrap:wrap;gap:12px}
+.ch button{padding:11px 18px;border-radius:10px;border:1.5px solid #ff6a00;background:#fff;color:#ff6a00;font-weight:bold;font-size:16px;cursor:pointer}
+.ch button.active{background:#ff6a00;color:#fff}
+.selected{text-align:center;color:#777;font-size:14px;margin:10px 0 0;word-break:break-all}
+.flex{display:flex;gap:12px;margin-top:18px}
+.btn{flex:1;padding:14px;border-radius:12px;border:0;font-size:19px;font-weight:bold;cursor:pointer}
+.btn-fill{background:#ff6a00;color:#fff}
+.btn-line{background:#fff;color:#ff6a00;border:1.5px solid #ff6a00}
+.link{text-align:right;color:#2563eb;margin:18px 0;cursor:pointer;font-size:16px}
+.note{border:1px solid #fca5a5;border-radius:12px;padding:16px 14px 16px 18px;color:#777;font-size:15px;line-height:1.5;position:relative;margin-top:14px;background:#fff}
+.note i{position:absolute;left:-8px;top:-12px;background:#ef4444;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:bold;font-size:18px}
+.center{text-align:center}
+.paybox{background:#2563eb;color:#fff;border-radius:14px;padding:20px 12px;text-align:center;margin:0 0 12px}
+.paybox h2{margin:0;font-size:24px;font-weight:900}
+.paybox p{margin:8px 0 0;font-size:15px;opacity:.95}
+.qr{background:#fff;border:1px solid #eee;border-radius:14px;padding:20px 16px;text-align:center;margin:14px 0}
+.qr img{width:230px;height:230px}
+.green{background:#16a34a;color:#fff;border:0;width:100%;padding:16px;border-radius:12px;font-size:20px;font-weight:bold;cursor:pointer}
+.apps{display:flex;gap:8px;margin:14px 0}
+.apps a{flex:1;text-align:center;text-decoration:none;padding:12px 4px;border-radius:10px;font-weight:bold;font-size:16px}
+.apps a:nth-child(1){background:#fff;color:#111;border:1.5px solid #2563eb}
+.apps a:nth-child(2){background:#5f259f;color:#fff}
+.apps a:nth-child(3){background:#00b9f1;color:#fff}
+.upibox{background:#eef2ff;border-radius:12px;padding:16px;text-align:center;margin:12px 0}
+.upibox b{font-size:19px;word-break:break-all;text-transform:uppercase}
+.upibox span{font-weight:bold}
+.copy{width:100%;background:#fff;border:1.5px solid #1e40af;color:#1e40af;padding:13px;border-radius:30px;font-weight:bold;font-size:18px;cursor:pointer}
+label{font-size:13px;font-weight:bold;display:block;margin:14px 0 5px}
+input{width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:16px}
+.small{color:#888;font-size:14px;text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="card" id="app"></div>
+<script>
+function getData(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('c')){try{return JSON.parse(atob(p.get('c')))}catch(e){}}
+  if(p.get('biz')){return{biz:p.get('biz')||'Kreditapple',name:p.get('name')||'Customer',days:p.get('days')||'0',ext:p.get('ext')||'2000',full:p.get('full')||'5000',upi1:p.get('upi1')||'bharatpe.90065511470@fbpe',upi2:p.get('upi2')||'',upi3:p.get('upi3')||'',upi4:p.get('upi4')||'',upi5:p.get('upi5')||''}}
+  return null;
+}
+const d=getData();
+const app=document.getElementById('app');
+const params=new URLSearchParams(location.search);
+let sel=parseInt(params.get('ch')||'1');
+let page=params.get('page')||'home';
+let mode=params.get('mode')||'repay';
+function upis(){return [d.upi1,d.upi2,d.upi3,d.upi4,d.upi5]}
+function goPay(m){
+  const u=new URL(location.href);
+  u.searchParams.set('page','pay');
+  u.searchParams.set('mode',m);
+  u.searchParams.set('ch',sel);
+  location.href=u.toString();
+}
+function goHome(){
+  const u=new URL(location.href);
+  u.searchParams.delete('page');
+  u.searchParams.delete('mode');
+  location.href=u.toString();
+}
+function render(){
+  if(!d){
+    app.innerHTML=`<div class="header"><span></span>Kreditapple<span class="menu">☰</span></div><div class="body">
+    <label>Business Name</label><input id="biz" value="Kreditapple">
+    <label>Customer Name</label><input id="name" placeholder="Ahmed Khan">
+    <label>Customer Mobile</label><input id="mobile" placeholder="923001234567">
+    <label>Days Left</label><input id="days" type="number" value="0">
+    <label>Extension Amount</label><input id="ext" type="number" value="2000">
+    <label>Full Repayment Amount</label><input id="full" type="number" value="5000">
+    <label>Channel 1 UPI</label><input id="upi1" value="bharatpe.90065511470@fbpe">
+    <label>Channel 2 UPI</label><input id="upi2" placeholder="Optional">
+    <label>Channel 3 UPI</label><input id="upi3" placeholder="Optional">
+    <label>Channel 4 UPI</label><input id="upi4" placeholder="Optional">
+    <label>Channel 5 UPI</label><input id="upi5" placeholder="Optional">
+    <button class="btn btn-fill" style="width:100%;margin-top:18px" onclick="makeLink()">Customer Link Banao</button><div id="out"></div></div>`;return;
+  }
+  const list=upis();
+  const avail=list.map((u,i)=>u?i+1:null).filter(x=>x!==null);
+  if(!avail.includes(sel)) sel=avail[0]||1;
+
+  if(page!=='pay'){
+    let chBtns=avail.map(i=>`<button class="${sel===i?'active':''}" onclick="sel=${i};render()">${'Channel '+i}</button>`).join('');
+    // ch param update for refresh
+    const u=new URL(location.href); u.searchParams.set('ch',sel);
+    app.innerHTML=`
+    <div class="header"><span class="back">‹</span>${d.biz}<span class="menu">☰</span></div>
+    <div class="body">
+      <div class="pending"><b>Pending Repayment</b><div class="d">${d.days} <small>Days left</small></div></div>
+      <div class="amounts"><div><p>A Tenure Extension/₹</p><h2>${Number(d.ext).toLocaleString('en-IN')}</h2></div><div><p>Repayment Amount / ₹</p><h2>${Number(d.full).toLocaleString('en-IN')}</h2></div></div>
+      <h3>Repayment Channel</h3>
+      <div class="ch">${chBtns}</div>
+      <div class="selected">Selected: ${list[sel-1]}</div>
+      <div class="flex"><button class="btn btn-fill" onclick="goPay('repay')">Repay</button><button class="btn btn-line" onclick="goPay('extension')">Extension</button></div>
+      <div class="link">Repayment Voucher Entry ›</div>
+      <div class="note"><i>!</i>Repay on time to improve your credit score. Please pay only on this official page.</div>
+      <p class="center" style="font-weight:bold;margin-top:22px">Unlocked For Repeat Loans ₹50,000.00</p>
+      <p class="center" style="color:#ff6a00;font-size:18px">Auto-Schedule Next Loan ›</p>
+    </div>`;
+  } else {
+    const isRepay=mode==='repay';
+    const amt=isRepay?d.full:d.ext;
+    const upi=list[sel-1];
+    const title=isRepay?'Full Repayment':'Extension Payment';
+    const upiLink=`upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent(d.biz)}&am=${amt}&cu=INR&tn=${encodeURIComponent(title+' '+d.name)}`;
+    const qr=`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiLink)}`;
+    app.innerHTML=`
+    <div class="body" style="padding:16px">
+      <div class="paybox"><h2>${d.biz} - Payment</h2><p>Scan QR ya UPI ID se Pay Karo</p></div>
+      <div class="center" style="font-weight:bold">${title} - ₹ ${Number(amt).toLocaleString('en-IN')} | Channel ${sel}</div>
+      <div class="qr"><img src="${qr}"></div>
+      <a href="${upiLink}" style="text-decoration:none"><button class="green">Pay Now - Direct Pay Karo</button></a>
+      <div class="apps"><a href="${upiLink}">G Pay</a><a href="${upiLink}">PhonePe</a><a href="${upiLink}">Paytm</a></div>
+      <p class="small">Pay Now dabate hi tumhara Payment App khul jayega.</p>
+      <div class="upibox"><span>UPI ID</span><br><b>${upi}</b></div>
+      <button class="copy" onclick="navigator.clipboard.writeText('${upi}');alert('UPI ID Copy ho gayi')">Copy UPI ID</button>
+      <hr style="margin:20px 0">
+      <h3 style="text-align:center">Payment Confirmation</h3>
+      <input value="${d.biz}" readonly style="margin-bottom:12px">
+      <input value="${amt}" readonly style="margin-bottom:12px">
+      <label>UTR / Transaction ID (Payment ke baad)</label><input id="utr" placeholder="UTR yahan likho">
+      <label>Customer Name</label><input value="${d.name}" readonly>
+      <button class="btn btn-fill" style="width:100%" onclick="if(!document.getElementById('utr').value){alert('UTR dalo')}else{alert('Confirmation mil gayi! Hum verify karke batayenge.')}">Confirm Payment</button>
+      <button class="btn btn-line" style="width:100%;margin-top:10px" onclick="goHome()">Back</button>
+    </div>`;
+  }
+}
+function makeLink(){
+  const data={biz:document.getElementById('biz').value||'Kreditapple',name:document.getElementById('name').value||'Customer',mobile:document.getElementById('mobile').value||'',days:document.getElementById('days').value||'0',ext:document.getElementById('ext').value||'2000',full:document.getElementById('full').value||'5000',upi1:document.getElementById('upi1').value,upi2:document.getElementById('upi2').value,upi3:document.getElementById('upi3').value,upi4:document.getElementById('upi4').value,upi5:document.getElementById('upi5').value};
+  if(!data.upi1){alert('Channel 1 UPI zaroori hai');return;}
+  const code=btoa(JSON.stringify(data));
+  const link=location.origin+location.pathname+'?c='+code;
+  const msg=`Hello ${data.name}, aapki ${data.biz} repayment pending hai. Link: ${link}`;
+  document.getElementById('out').innerHTML=`<div style="background:#fff7ed;border:1px solid #ffcc99;padding:12px;border-radius:10px;margin-top:14px;word-break:break-all;font-size:13px">${link}</div><button class="btn btn-fill" style="width:100%" onclick="navigator.clipboard.writeText('${link}');alert('Copy ho gaya')">Link Copy Karo</button><a href="https://wa.me/${data.mobile}?text=${encodeURIComponent(msg)}" target="_blank" style="display:block;text-align:center;background:#25D366;color:#fff;padding:14px;border-radius:12px;text-decoration:none;font-weight:bold;margin-top:10px">WhatsApp Par Bhejo</a>`;
+}
+render();
+</script>
+</body>
+</html>
